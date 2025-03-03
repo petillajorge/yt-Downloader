@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Video Downloader</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #c00;
+            text-align: center;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #c00;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #900;
+        }
+        #status {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+        }
+        .success {
+            background-color: #dff0d8;
+            color: #3c763d;
+        }
+        .error {
+            background-color: #f2dede;
+            color: #a94442;
+        }
+        .loading {
+            background-color: #d9edf7;
+            color: #31708f;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>YouTube Video Downloader</h1>
+        <div class="input-group">
+            <label for="videoUrl">YouTube URL:</label>
+            <input type="text" id="videoUrl" placeholder="https://www.youtube.com/watch?v=..." required>
+        </div>
+        <div class="input-group">
+            <label for="format">Format:</label>
+            <select id="format">
+                <option value="videoandaudio">Video with Audio (MP4)</option>
+                <option value="audioonly">Audio Only (MP3)</option>
+            </select>
+        </div>
+        <button id="downloadBtn">Download</button>
+        <div id="status"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const downloadBtn = document.getElementById('downloadBtn');
+            const videoUrlInput = document.getElementById('videoUrl');
+            const formatSelect = document.getElementById('format');
+            const statusDiv = document.getElementById('status');
+
+            downloadBtn.addEventListener('click', async () => {
+                const videoUrl = videoUrlInput.value.trim();
+                const format = formatSelect.value;
+                
+                if (!videoUrl) {
+                    showStatus('Please enter a YouTube URL', 'error');
+                    return;
+                }
+
+                if (!isValidYouTubeUrl(videoUrl)) {
+                    showStatus('Please enter a valid YouTube URL', 'error');
+                    return;
+                }
+
+                showStatus('Processing your download request...', 'loading');
+                
+                try {
+                    const response = await fetch('/api/download', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ videoUrl, format })
+                    });
+                    
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.message || 'Download failed');
+                    }
+                    
+                    // Redirect to download the file
+                    const data = await response.json();
+                    showStatus('Download started!', 'success');
+                    
+                    // Create download link
+                    window.location.href = data.downloadUrl;
+                } catch (error) {
+                    showStatus(`Error: ${error.message}`, 'error');
+                }
+            });
+
+            function isValidYouTubeUrl(url) {
+                const pattern = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.?be)\/.+/;
+                return pattern.test(url);
+            }
+
+            function showStatus(message, type) {
+                statusDiv.textContent = message;
+                statusDiv.className = type;
+                statusDiv.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>

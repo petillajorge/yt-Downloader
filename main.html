@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YouTube Downloader</title>
+  <style>
+    :root {
+      --primary-color: #ff0000;
+      --secondary-color: #282828;
+      --text-color: #333;
+      --background-color: #f9f9f9;
+      --card-color: #ffffff;
+      --border-radius: 8px;
+      --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      --transition: all 0.3s ease;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--background-color);
+      color: var(--text-color);
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .container {
+      width: 90%;
+      max-width: 650px;
+      padding: 2rem;
+      background-color: var(--card-color);
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+    }
+
+    .app-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .app-title {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      color: var(--primary-color);
+    }
+
+    .app-subtitle {
+      color: var(--secondary-color);
+      font-weight: normal;
+    }
+
+    .logo {
+      display: inline-block;
+      margin-bottom: 1rem;
+    }
+
+    .logo svg {
+      width: 60px;
+      height: 60px;
+    }
+
+    .input-group {
+      margin-bottom: 1.5rem;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 0.75rem;
+      border: 2px solid #ddd;
+      border-radius: var(--border-radius);
+      font-size: 1rem;
+      transition: var(--transition);
+    }
+
+    input[type="text"]:focus {
+      border-color: var(--primary-color);
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(255, 0, 0, 0.1);
+    }
+
+    .options-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .option-group {
+      flex: 1;
+      min-width: 180px;
+    }
+
+    select {
+      width: 100%;
+      padding: 0.75rem;
+      border: 2px solid #ddd;
+      border-radius: var(--border-radius);
+      font-size: 1rem;
+      background-color: white;
+      transition: var(--transition);
+    }
+
+    select:focus {
+      border-color: var(--primary-color);
+      outline: none;
+    }
+
+    .checkbox-container {
+      display: flex;
+      align-items: center;
+      margin-top: 0.5rem;
+    }
+
+    .checkbox-container input {
+      margin-right: 0.5rem;
+    }
+
+    button {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: var(--transition);
+      width: 100%;
+      font-weight: 600;
+    }
+
+    button:hover {
+      background-color: #cc0000;
+      transform: translateY(-2px);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    .preview-container {
+      margin-top: 2rem;
+      border-top: 1px solid #eee;
+      padding-top: 1.5rem;
+      text-align: center;
+    }
+
+    .preview-box {
+      background-color: #f0f0f0;
+      border-radius: var(--border-radius);
+      padding: 1rem;
+      margin-top: 1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 150px;
+    }
+
+    .preview-thumbnail {
+      max-width: 100%;
+      border-radius: 4px;
+      margin-bottom: 1rem;
+      box-shadow: var(--box-shadow);
+    }
+
+    .preview-info {
+      text-align: left;
+      width: 100%;
+    }
+
+    .preview-title {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .preview-details {
+      color: #666;
+      font-size: 0.9rem;
+    }
+
+    .status-message {
+      margin-top: 1rem;
+      padding: 0.75rem;
+      border-radius: var(--border-radius);
+      text-align: center;
+    }
+
+    .success {
+      background-color: #e6f7e6;
+      color: #2e7d32;
+    }
+
+    .error {
+      background-color: #ffebee;
+      color: #c62828;
+    }
+
+    .loading {
+      background-color: #e3f2fd;
+      color: #1565c0;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        padding: 1.5rem;
+      }
+      
+      .options-container {
+        flex-direction: column;
+      }
+      
+      .option-group {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="app-header">
+      <div class="logo">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M22.5401 6.42C22.4213 5.94541 22.1794 5.51057 21.8387 5.15941C21.4981 4.80824 21.0708 4.55318 20.6001 4.42C18.8801 4 12.0001 4 12.0001 4C12.0001 4 5.12008 4 3.40008 4.46C2.92933 4.59318 2.50206 4.84824 2.16143 5.19941C1.8208 5.55057 1.57887 5.98541 1.46008 6.46C1.14577 8.20556 0.991808 9.97631 1.00008 11.75C0.988882 13.537 1.14285 15.3213 1.46008 17.08C1.59104 17.5398 1.83839 17.9581 2.17823 18.2945C2.51806 18.6308 2.9389 18.8738 3.40008 19C5.12008 19.46 12.0001 19.46 12.0001 19.46C12.0001 19.46 18.8801 19.46 20.6001 19C21.0708 18.8668 21.4981 18.6118 21.8387 18.2606C22.1794 17.9094 22.4213 17.4746 22.5401 17C22.8524 15.2676 23.0063 13.5103 23.0001 11.75C23.0113 9.96295 22.8573 8.1787 22.5401 6.42Z" fill="#FF0000"/>
+          <path d="M9.75 15.02L15.5 11.75L9.75 8.48001V15.02Z" fill="white"/>
+        </svg>
+      </div>
+      <h1 class="app-title">YouTube Downloader</h1>
+      <h2 class="app-subtitle">Download videos with your preferred quality</h2>
+    </header>
+
+    <div class="input-group">
+      <label for="video-url">YouTube Video URL</label>
+      <input type="text" id="video-url" placeholder="https://www.youtube.com/watch?v=..." autocomplete="off">
+    </div>
+
+    <div class="options-container">
+      <div class="option-group">
+        <label for="format-select">Format</label>
+        <select id="format-select">
+          <option value="video">Video + Audio</option>
+          <option value="audio">Audio Only</option>
+        </select>
+      </div>
+
+      <div class="option-group" id="resolution-container">
+        <label for="resolution-select">Resolution</label>
+        <select id="resolution-select">
+          <option value="1080">1080p (Full HD)</option>
+          <option value="720" selected>720p (HD)</option>
+          <option value="480">480p (SD)</option>
+          <option value="360">360p</option>
+          <option value="240">240p</option>
+          <option value="144">144p</option>
+        </select>
+      </div>
+    </div>
+
+    <button id="fetch-btn">Fetch Video Info</button>
+    <div id="status-message" class="status-message hidden"></div>
+
+    <div class="preview-container hidden" id="preview-container">
+      <h3>Video Preview</h3>
+      <div class="preview-box">
+        <img id="preview-thumbnail" class="preview-thumbnail" src="/api/placeholder/320/180" alt="Video thumbnail">
+        <div class="preview-info">
+          <div id="preview-title" class="preview-title">Video Title</div>
+          <div id="preview-details" class="preview-details">Duration: 00:00 | Channel: Channel Name</div>
+        </div>
+      </div>
+      <button id="download-btn" style="margin-top: 1rem;">Download</button>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const videoUrlInput = document.getElementById('video-url');
+      const formatSelect = document.getElementById('format-select');
+      const resolutionContainer = document.getElementById('resolution-container');
+      const resolutionSelect = document.getElementById('resolution-select');
+      const fetchBtn = document.getElementById('fetch-btn');
+      const downloadBtn = document.getElementById('download-btn');
+      const previewContainer = document.getElementById('preview-container');
+      const previewThumbnail = document.getElementById('preview-thumbnail');
+      const previewTitle = document.getElementById('preview-title');
+      const previewDetails = document.getElementById('preview-details');
+      const statusMessage = document.getElementById('status-message');
+
+      // Toggle resolution selection based on format
+      formatSelect.addEventListener('change', function() {
+        if (this.value === 'audio') {
+          resolutionContainer.style.display = 'none';
+        } else {
+          resolutionContainer.style.display = 'block';
+        }
+      });
+
+      // Sample video data for demonstration
+      const sampleVideos = {
+        'dQw4w9WgXcQ': {
+          title: 'Rick Astley - Never Gonna Give You Up',
+          thumbnail: '/api/placeholder/320/180',
+          duration: '3:33',
+          channel: 'Rick Astley',
+        },
+        '_8o2wK0Sz5o': {
+          title: 'Demo Video',
+          thumbnail: '/api/placeholder/320/180',
+          duration: '5:21',
+          channel: 'Demo Channel',
+        }
+      };
+
+      // Function to extract video ID from URL
+      function extractVideoId(url) {
+        const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
+        const match = url.match(regExp);
+        return (match && match[7].length === 11) ? match[7] : false;
+      }
+
+      // Function to show status message
+      function showStatus(message, type) {
+        statusMessage.textContent = message;
+        statusMessage.className = `status-message ${type}`;
+        statusMessage.classList.remove('hidden');
+        setTimeout(() => {
+          statusMessage.classList.add('hidden');
+        }, 5000);
+      }
+
+      // Fetch button click handler
+      fetchBtn.addEventListener('click', function() {
+        const url = videoUrlInput.value.trim();
+        if (!url) {
+          showStatus('Please enter a YouTube URL', 'error');
+          return;
+        }
+
+        const videoId = extractVideoId(url);
+        if (!videoId) {
+          showStatus('Invalid YouTube URL', 'error');
+          return;
+        }
+
+        // In a real app, we would fetch video info from a backend API
+        // For this demo, we'll use sample data or generate info
+        showStatus('Fetching video information...', 'loading');
+        
+        setTimeout(() => {
+          let videoInfo;
+          if (sampleVideos[videoId]) {
+            videoInfo = sampleVideos[videoId];
+          } else {
+            // Generate dummy info
+            videoInfo = {
+              title: 'YouTube Video ' + videoId,
+              thumbnail: '/api/placeholder/320/180',
+              duration: Math.floor(Math.random() * 10) + ':' + Math.floor(Math.random() * 60).toString().padStart(2, '0'),
+              channel: 'Channel ' + Math.floor(Math.random() * 1000)
+            };
+          }
+
+          // Update preview
+          previewTitle.textContent = videoInfo.title;
+          previewDetails.textContent = `Duration: ${videoInfo.duration} | Channel: ${videoInfo.channel}`;
+          previewThumbnail.src = videoInfo.thumbnail;
+          previewThumbnail.alt = videoInfo.title;
+          
+          // Show preview section
+          previewContainer.classList.remove('hidden');
+          showStatus('Video found! Ready to download.', 'success');
+        }, 1500);
+      });
+
+      // Download button click handler
+      downloadBtn.addEventListener('click', function() {
+        const videoId = extractVideoId(videoUrlInput.value.trim());
+        if (!videoId) return;
+        
+        const format = formatSelect.value;
+        const resolution = resolutionSelect.value;
+        
+        // In a real app, this would trigger the actual download via a backend API
+        // For this demo, we'll just show a success message
+        showStatus('Preparing download...', 'loading');
+        
+        setTimeout(() => {
+          const formatLabel = format === 'audio' ? 'MP3 audio' : `${resolution}p video`;
+          showStatus(`Download started: ${formatLabel}`, 'success');
+          
+          // In a real application, this would initiate a download
+          // via window.location.href = downloadUrl or similar
+          
+          // For demo purposes, we'll show what would happen in a real implementation
+          const downloadFilename = videoId + (format === 'audio' ? '.mp3' : '.mp4');
+          console.log(`In a real app, would download: ${downloadFilename} (${formatLabel})`);
+        }, 2000);
+      });
+
+      // Add URL validation on input change
+      videoUrlInput.addEventListener('input', function() {
+        const url = this.value.trim();
+        const videoId = extractVideoId(url);
+        
+        if (url && !videoId) {
+          this.style.borderColor = '#f44336';
+        } else if (url) {
+          this.style.borderColor = '#4caf50';
+        } else {
+          this.style.borderColor = '#ddd';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
